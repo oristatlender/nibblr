@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Builds the web version and repackages it as a single-folder preview (web-preview/)
+# that works from any web address. Run: bash scripts-build-preview.sh
+set -euo pipefail
+rm -rf dist web-preview && mkdir -p web-preview
+EXPO_OFFLINE=1 CI=1 npx expo export -p web
+cp dist/_expo/static/js/web/index-*.js web-preview/app.js
+cat > web-preview/index.html <<'HTML'
+<title>Nibblr Prototype</title>
+<style>
+  /* App shell: one full-height column; the app draws its own phone-width layout inside. */
+  :root { --bg: #F7F5FF; --fg: #1E1B2E; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #1E1B2E; --fg: #F7F5FF; color-scheme: dark } }
+  :root[data-theme="dark"] { --bg: #1E1B2E; --fg: #F7F5FF; color-scheme: dark }
+  html, body { height: 100%; }
+  body { overflow: hidden; background: var(--bg); color: var(--fg); }
+  #root { display: flex; height: 100%; flex: 1; }
+</style>
+<noscript>Nibblr needs JavaScript to run.</noscript>
+<div id="root"></div>
+<script src="./app.js" defer></script>
+HTML
+echo "Built web-preview/"
